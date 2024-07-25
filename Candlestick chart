@@ -1,0 +1,105 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Candlestick Chart',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: CandlestickChartScreen(),
+    );
+  }
+}
+
+class CandlestickChartScreen extends StatelessWidget {
+  final List<CandleData> data = [
+    CandleData(open: 10, close: 15, high: 16, low: 9),
+    CandleData(open: 15, close: 12, high: 17, low: 11),
+    CandleData(open: 12, close: 14, high: 15, low: 10),
+    CandleData(open: 14, close: 18, high: 19, low: 13),
+    CandleData(open: 18, close: 16, high: 20, low: 15),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Candlestick Chart'),
+      ),
+      body: Center(
+        child: Container(
+          width: 400,
+          height: 300,
+          child: CustomPaint(
+            painter: CandlestickChartPainter(data),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CandleData {
+  final double open;
+  final double close;
+  final double high;
+  final double low;
+
+  CandleData({
+    required this.open,
+    required this.close,
+    required this.high,
+    required this.low,
+  });
+}
+
+class CandlestickChartPainter extends CustomPainter {
+  final List<CandleData> data;
+
+  CandlestickChartPainter(this.data);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double candleWidth = size.width / (data.length * 2);
+    final double heightScale = size.height / 20; // Scale for height
+
+    for (int i = 0; i < data.length; i++) {
+      final candle = data[i];
+
+      final double left = i * candleWidth * 2;
+      final double right = left + candleWidth;
+      final double openY = size.height - (candle.open * heightScale);
+      final double closeY = size.height - (candle.close * heightScale);
+      final double highY = size.height - (candle.high * heightScale);
+      final double lowY = size.height - (candle.low * heightScale);
+
+      // Drawing a line for a high price
+      canvas.drawLine(
+        Offset(left + candleWidth / 2, highY),
+        Offset(left + candleWidth / 2, lowY),
+        Paint()..color = Colors.black..style = PaintingStyle.stroke,
+      );
+
+      // Drawing the body of the candle
+      final Paint paint = Paint()
+        ..color = candle.close >= candle.open ? Colors.green : Colors.red
+        ..style = PaintingStyle.fill;
+
+      canvas.drawRect(
+        Rect.fromLTRB(left, closeY, right, openY),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
+  }
+}
